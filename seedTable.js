@@ -10,19 +10,6 @@ async function seedTable() {
     driver: sqlite3.Database
   })
 
-  /*
-  Challenge:
-  1. Take the data 'vinyl' imported from data.js and add it to our database.
-     The keys in the objects align with the columns in our database.
-     The 'id' column in the database will self-populate - you do not need to do anything.
-
-  2. If something goes wrong, rollback the process so no data is added.
-
-  3. Run seedTable.js and then logTable.js to check.
-  
-    hint.md for help!
-  */
-
   try {
 
     await db.exec('BEGIN TRANSACTION')

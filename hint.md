@@ -1,18 +1,11 @@
-You can see how to set up a database connection in logTable.js
+You can use the exec() method to begin the transaction and to commit at the end of the process.
 
-To create the table you can use the exec() method.
+Iterate over the data and use the run() method to insert data into the database. Remember to bind the data!
 
-The floating-point type is 'REAL'.
+database.run(
+       `INSERT INTO table (col1, col2, col3)
+        VALUES (?, ?, ?)`,
+       [name, age, city]
+     )
 
-In the previous scrim we created a table with this code:
-
-    await db.exec(`
-    CREATE TABLE IF NOT EXISTS abductions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        location TEXT NOT NULL,
-        details TEXT NOT NULL
-    )
-    `)
-
-You can close a connection with
-    await db.close()
+If there are errors, you can rollback. Use the exec() method to do this and pass in the string 'ROLLBACK'.

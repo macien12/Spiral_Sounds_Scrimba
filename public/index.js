@@ -40,9 +40,9 @@ function renderProducts(products) {
  * Fetches and displays all products on initial page load.
  */
 async function init() {
+  populateGenreSelect()
   const products = await getProducts()
   renderProducts(products)
-  populateGenreSelect()
 }
 
 init()

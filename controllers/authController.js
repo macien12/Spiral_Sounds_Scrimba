@@ -1,10 +1,11 @@
 import validator from 'validator'
+import { getDBConnection } from '../db/db.js'
 
 export async function registerUser(req, res) {
 
   let { name, email, username, password } = req.body
 
-  if ( !name || !email || !username || !password ) {
+  if (!name || !email || !username || !password) {
 
     return res.status(400).json({ error: 'All fields are required.' })
 
@@ -16,8 +17,9 @@ export async function registerUser(req, res) {
 
   if (!/^[a-zA-Z0-9_-]{1,20}$/.test(username)) {
 
-    return res.status(400).json({ error: 'Username must be 1–20 characters, using letters, numbers, _ or -.' })
-
+    return res.status(400).json(
+      { error: 'Username must be 1–20 characters, using letters, numbers, _ or -.' }
+    )
   }
 
   if (!validator.isEmail(email)) {
@@ -26,23 +28,42 @@ export async function registerUser(req, res) {
 
   }
 
-  console.log(req.body)
+
+  try {
+
+    const db = await getDBConnection()
+
+    const existing = await db.get('SELECT id FROM users WHERE email = ? OR username = ?', [email, username])
+
+    if (existing) {
+      return res.status(400).json({ error: 'Email or username already in use.' })
+    }
+
+    const result = await db.run('INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)', [name, email, username, password])
+
+    res.status(201).json({ message: 'User registered'})
 
 /*
 Challenge:
-1. Validate the incoming user data.
-  - Make sure all fields are present.
-  - Remove any whitespace where appropriate.
-  - Use regex /^[a-zA-Z0-9_-]{1,20}$/ to check the username contains only the allowed characters.
-  - Use the Validator package to check the email format is valid.
+1. Check if the username or email address has already been used.
+    - If it has, end the response with a suitable status code and this object:
+      { error: 'Email or username already in use.' }.
 
-If fields are not present, the username uses disallowed characters, or the email address is not of a valid format, end the response with a suitable code and send an error object with a suitable message. For example:
-   
-   { error: 'All fields are required.' }
+    - If the username and email address are unique in the database, add the user to the table and send this JSON { message: 'User registered'}. Which status code should you use?
 
-  - Test with console.logs.
+- When you have been successful, the mini browser will redirect to the homepage.
 
-hint.md for help!
+- Run logTable.js to check you have created a user. 
+
+- You will be able to see the password in the db! We will fix that later!
 */
+
+  } catch (err) {
+
+    console.error('Registration error:', err.message);
+    res.status(500).json({ error: 'Registration failed. Please try again.' })
+
+  }
+
 
 }

@@ -5,13 +5,6 @@ import { authRouter } from './routes/auth.js'
 const app = express()
 const PORT = 8000
 
-/*
-Challenge:
-
-1. What middleware do we need to make this work?
-
-*/
-
 app.use(express.json())
  
 app.use(express.static('public'))

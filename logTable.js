@@ -6,7 +6,6 @@ async function logTable() {
   const tableName = 'users'
 
   try { 
-
     const table = await db.all(`SELECT * FROM ${tableName}`)
     console.table(table)
 

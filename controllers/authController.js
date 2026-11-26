@@ -31,17 +31,6 @@ export async function registerUser(req, res) {
 
   try {
 
-/*
-Challenge:
-  1. Import the bcryptjs package.
-  2. Use it to hash the incoming password just before it's stored in the database.
-    - Use a cost-factor of 10
-
-To test, sign up a new user and run logTable.js.
-
-hint.md for help!
-*/
-
     const db = await getDBConnection()
 
     const existing = await db.get('SELECT id FROM users WHERE email = ? OR username = ?', [email, username])
@@ -53,10 +42,16 @@ hint.md for help!
     const hashed = await bcrypt.hash(password, 10)
 
     const result = await db.run('INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)', [name, email, username, hashed])
+    console.log(result)
+
+    req.session.userId = result.lastID
+
+/*
+Challenge:
+  1. Store the 'lastID' from the database insertion above to the 'userId' property on the 'session' object on the request. This will bind our logged in user to the session.
+*/
 
     res.status(201).json({ message: 'User registered'})
-
-
   } catch (err) {
 
     console.error('Registration error:', err.message);

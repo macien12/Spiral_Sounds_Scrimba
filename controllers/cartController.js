@@ -29,21 +29,48 @@ export async function getCartCount(req, res) {
   const result = await db.get(`SELECT SUM(quantity) AS totalItems FROM cart_items WHERE user_id = ?`, [req.session.userId])
 
   res.json({ totalItems: result.totalItems || 0 })
-  
-/*
-Challenge:
-
-1. Write code to ensure that when a logged-in user clicks 'Add to Cart', their current cart count is shown in the header with a cart icon. The frontend has been done for you. All the backend need do is provide the following JSON on the /api/cart/cart-count endpoint: 
-{ <THE TOTAL NUMBER OF THE USER'S ITEMS> || 0 }
-
-Ignore frontend console errors for now!
- 
-For testing, log in with:
-Username: test
-Password: test
-
-Loads of help in hint.md
-*/
-  
-
 }  
+
+
+export async function getAll(req, res) {
+
+  const db = await getDBConnection()
+
+  const items = await db.all(`SELECT ci.id AS cartItemId, ci.quantity, p.title, p.artist, p.price FROM cart_items ci JOIN products p ON p.id = ci.product_id WHERE ci.user_id = ?`, [req.session.userId]) 
+
+  res.json({ items: items})
+}  
+
+
+export async function deleteItem(req, res) {
+
+    const db = await getDBConnection()
+
+    const itemId = parseInt(req.params.itemId, 10)
+
+    if (isNaN(itemId)) {
+      return res.status(400).json({error: 'Invalid item ID'})
+    }
+
+    const item = await db.get('SELECT quantity FROM cart_items WHERE id = ? AND user_id = ?', [itemId, req.session.userId])
+
+    if (!item) {
+      return res.status(400).json({error: 'Item not found'})
+    }
+
+    await db.run('DELETE FROM cart_items WHERE id = ? AND user_id = ?', [itemId, req.session.userId])
+
+    res.status(204).send()
+  
+}
+
+export async function deleteAll(req, res) {
+
+  const db = await getDBConnection()
+
+  await db.run('DELETE FROM cart_items WHERE user_id = ?', [req.session.userId])
+
+  res.status(204).send()
+  
+}
+
